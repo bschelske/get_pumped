@@ -5,6 +5,9 @@ import time
 class SyringePump:
     """Class defining a syringe pump.
 
+    Pump addresses must start at 0 and increase with each pump.
+    The pump address must be set on the pump
+
     com needs to be str in format 'COM#'
     """
 
@@ -17,52 +20,151 @@ class SyringePump:
             parity=serial.PARITY_ODD,
             stopbits=serial.STOPBITS_TWO,
             bytesize=serial.SEVENBITS
+            )
+        self.state = ''
+
+    def input(self, input_message: str) -> str:
+        output = ''
+        print('IN:', input_message)
+        formatted_input = input + '\r\n'
+        self.ser.write(formatted_input.encode('ascii'))
+
+        # Wait 1 sec before reading output
+        # time.sleep(1)
+        while self.ser.inWaiting() > 0:
+            output += self.ser.read(1).decode("utf-8")
+
+        if output != '':
+            print('OUT:', output)
+            self.state = output
+        return output
+
+    def get_address(self):
+        response = self.input('address')
+        return int(response)
+
+    def get_syringe(self):
+        response = self.input('syrm')
+        return response
+
+    def run(self):
+        response = self.input('run')
+        return response
+
+    def stop(self):
+        response = self.input('stop')
+        return response
+
+    def withdraw_rate(self, rate=''):
+        if rate:
+            rate = ' ' + rate
+        response = self.input('wrate' + rate)
+        return response
+
+    def clear_target_volume(self):
+        response = self.input('ctvolume')
+        return response
+
+    def set_target_volume(self, volume=''):
+        if volume:
+            volume = ' ' + volume
+        response = self.input('tvolume' + volume)
+        return response
+
+    def trigger_status(self):
+        response = self.input('input')
+        return response
+
+    def set_output(self):
+        response = self.input('output')
+        return response
+
+    def get_metrics(self):
+        response = self.input('metrics')
+        return response
+
+    def poll(self, value=''):
+        if value:
+            volume = ' ' + value
+        response = self.input('poll' + volume)
+        return response
 
 
-)
+class Microscope:
+    """class representing the SMZ18"""
+    def __init__(self):
+        self.path = ''
+        self.current_trial = 1
 
-# Create class instance
-pump_0 = SyringePump(0, 'COM6')
-pump_1 = SyringePump(1,'COM7')
+    def image(self, filename):
+        # Take an image with the microscope
+        image_path = self.path + filename + '.tif'
+        pass
 
-pumps = [pump_0, pump_1]
-for pump in pumps:
-    print('\nPump:', pump.address)
-    # Configure serial connection
-    pump.ser.isOpen()
+    def connect(self):
+        # Connect to microscope
+        pass
 
-    input = 'stp'
-    print('IN:', input)
-    out = ''
 
-    # Send the input to the device
-    # Note the carriage return and line feed characters \r\n will depend on the device
-    message = input + '\r\n'
-    pump.ser.write(message.encode('ascii'))
+# Initialize pumps
+outlet_pump = SyringePump(0, 'COM6')
+cell_pump = SyringePump(1, 'COM7')
+buffer_pump = SyringePump(2, 'COM7')
+waste_pump = SyringePump(3, 'COM7')
 
-    # Wait 1 sec before reading output
-    # time.sleep(1)
-    while pump.ser.inWaiting() > 0:
-        out += pump.ser.read(1).decode("utf-8")
+# Apply settings to each pump
 
-    if out != '':
-        print('OUT:', out)
+# Check for incorrect settings
+assert outlet_pump.get_address() == 0
+assert cell_pump.get_address() == 1
+assert buffer_pump.get_address() == 2
+assert waste_pump.get_address() == 3
 
-    out = out.strip('\r\n')
-    out = out.split('\n')
+# assert outlet_pump.get_syringe() == 0
+# assert cell_pump.get_syringe() == 1
+# assert buffer_pump.get_syringe() == 2
+# assert waste_pump.get_syringe() == 3
 
-    # Print the response
-    if out != '':
-        for line in out:
-            line = line.strip('\r')
-            if line == ':':
-                print('The pump is idle')
-            if line == '<':
-                print('The pump is withdrawing')
-            if line == '>':
-                print('The pump is infusing')
-            if line == '*':
-                print('The pump stalled')
-            if line == 'T*':
-                print('The target was reached')
+
+# Begin Routine
+# 1. Image blank
+
+# 2. Withdraw buffer from inlet
+waste_pump.withdraw_rate('200 n/m')
+waste_pump.run()
+
+# 3. Infuse cells
+cell_pump.run()
+
+# 4. FF withdraw outlet pump
+outlet_pump.withdraw_rate('200 n/m')
+outlet_pump.run()
+
+# 5. Turn on voltage
+
+# 6. Wait 5 min withdraw outlet pump
+outlet_pump.withdraw_rate('200 n/m')
+outlet_pump.run()
+
+# 7. Withdraw cells from inlet
+waste_pump.withdraw_rate('200 n/m')
+waste_pump.run()
+
+# 8. Infuse buffer
+buffer_pump.run()
+
+# 9. Wait ~2 min for channel to rinse
+outlet_pump.withdraw_rate('200 n/m')
+outlet_pump.run()
+
+# 10. Image tips
+
+# 11. Turn off voltage
+
+# 12. Image transfer
+
+# 12. FF withdraw flow pump
+outlet_pump.withdraw_rate('200 n/m')
+outlet_pump.run()
+
 
