@@ -26,11 +26,11 @@ class SyringePump:
     def input(self, input_message: str) -> str:
         output = ''
         print('IN:', input_message)
-        formatted_input = input + '\r\n'
+        formatted_input = input_message + '\r\n'
         self.ser.write(formatted_input.encode('ascii'))
 
         # Wait 1 sec before reading output
-        # time.sleep(1)
+        time.sleep(1)
         while self.ser.inWaiting() > 0:
             output += self.ser.read(1).decode("utf-8")
 
@@ -41,7 +41,7 @@ class SyringePump:
 
     def get_address(self):
         response = self.input('address')
-        return int(response)
+        return response
 
     def get_syringe(self):
         response = self.input('syrm')
@@ -85,8 +85,8 @@ class SyringePump:
 
     def poll(self, value=''):
         if value:
-            volume = ' ' + value
-        response = self.input('poll' + volume)
+            value = ' ' + value
+        response = self.input('poll' + value)
         return response
 
 
@@ -107,64 +107,31 @@ class Microscope:
 
 
 # Initialize pumps
-outlet_pump = SyringePump(0, 'COM6')
-cell_pump = SyringePump(1, 'COM7')
-buffer_pump = SyringePump(2, 'COM7')
-waste_pump = SyringePump(3, 'COM7')
+outlet_pump = SyringePump(0, 'COM9')
+# cell_pump = SyringePump(1, 'COM7')
+# buffer_pump = SyringePump(2, 'COM7')
+# waste_pump = SyringePump(3, 'COM7')
 
 # Apply settings to each pump
 
 # Check for incorrect settings
-assert outlet_pump.get_address() == 0
-assert cell_pump.get_address() == 1
-assert buffer_pump.get_address() == 2
-assert waste_pump.get_address() == 3
+# assert outlet_pump.get_address() == '\nPump address is 0\r\n:'
+# assert cell_pump.get_address() == 1
+# assert buffer_pump.get_address() == 2
+# assert waste_pump.get_address() == 3
 
 # assert outlet_pump.get_syringe() == 0
 # assert cell_pump.get_syringe() == 1
 # assert buffer_pump.get_syringe() == 2
 # assert waste_pump.get_syringe() == 3
 
-
-# Begin Routine
-# 1. Image blank
-
-# 2. Withdraw buffer from inlet
-waste_pump.withdraw_rate('200 n/m')
-waste_pump.run()
-
-# 3. Infuse cells
-cell_pump.run()
-
-# 4. FF withdraw outlet pump
-outlet_pump.withdraw_rate('200 n/m')
+# Testing
+outlet_pump.poll()
+outlet_pump.poll('off')
+outlet_pump.get_syringe()
+outlet_pump.get_metrics()
 outlet_pump.run()
-
-# 5. Turn on voltage
-
-# 6. Wait 5 min withdraw outlet pump
-outlet_pump.withdraw_rate('200 n/m')
-outlet_pump.run()
-
-# 7. Withdraw cells from inlet
-waste_pump.withdraw_rate('200 n/m')
-waste_pump.run()
-
-# 8. Infuse buffer
-buffer_pump.run()
-
-# 9. Wait ~2 min for channel to rinse
-outlet_pump.withdraw_rate('200 n/m')
-outlet_pump.run()
-
-# 10. Image tips
-
-# 11. Turn off voltage
-
-# 12. Image transfer
-
-# 12. FF withdraw flow pump
-outlet_pump.withdraw_rate('200 n/m')
-outlet_pump.run()
-
+outlet_pump.stop()
+outlet_pump.trigger_status()
+outlet_pump.withdraw_rate()
 
