@@ -1,0 +1,69 @@
+Pump Control
+
+Multiple syringe pumps can automate device operation.
+
+Procedure:
+
+1. Image blank
+2. Withdraw buffer from inlet
+3. Infuse cells
+4. FF withdraw flow pump
+5. Turn on voltage
+6. Wait 5 min withdraw flow pump
+7. Withdraw cells from inlet
+8. Infuse buffer
+9. Wait ~2 min for channel to rinse
+10. Image tips
+11. Turn off voltage
+12. Image transfer
+12. FF withdraw flow pump
+
+Repeat
+
+Setup:
+
+4 pumps controlled by serial input via usb
+    0. Withdraw pump in outlet (Hamilton)
+    1. Infuse pump in inlet for cells (Plastic)
+    2. Infuse pump in inlet for buffer (Plastic)
+    3. Withdraw pump in inlet for waste (Plastic)
+
+Microscope imaging control
+Auto capture folder path
+blank_#.tif
+tips_#.tif
+transfer_4.tif
+
+Notes:
+Each step of the procedure depends on careful timing, or triggering. Timing would likely fail, so sending and receiving
+responses to pumps may activate further steps in the procedure.
+
+There may be functions for the inlet pumps that withdraw or infuse specific volumes.
+
+Not sure how exactly to drive Nikon Elements. Maybe write macros in elements, then use hotkeys to start macros. Python
+could press the hotkeys?
+    Edit: I DO NOT LIKE the Nikon macro language. I do not know C. Keeping it simple might be best. Autocapture a
+    sequence of images, then rename the images post experiment.
+
+The hotkeys + inputs could be used to drive MFG as well. XML files is also an option for the MFG. I don't like the
+python input approach.
+
+TODO:
+Nikon software control via python
+    Connection (likely hotkeys)
+    image setup
+    file naming
+    receive state of microscope for triggering (imaging is near instant so delay in procedure could be OK)
+Pump Control
+    Outlet pump withdraw settings
+    Cell pump infuse settings
+    Buffer pump infuse settings
+    Waste pump withdraw settings
+    Idiot check for wrong syringe settings
+Triggering
+    Send input to pump, receive output, activating next step in procedure
+MFG
+    ✅ Connect to board
+IRL
+    Test parameters for inlet pumps
+    Verify timing of pump activation
