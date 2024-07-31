@@ -52,15 +52,15 @@ python input approach.
 
 TODO:
 Nikon software control via python
-    Connection (likely hotkeys)
+    ✅ Connection (win32)
     image setup
     file naming
-    receive state of microscope for triggering (imaging is near instant so delay in procedure could be OK)
+    ✅ receive state of microscope for triggering (time.sleep)
 Pump Control
-    Outlet pump withdraw settings
-    Cell pump infuse settings
-    Buffer pump infuse settings
-    Waste pump withdraw settings
+    ✅ Outlet pump withdraw settings
+    ✅ Cell pump infuse settings
+    ✅ Buffer pump infuse settings
+    ✅ Waste pump withdraw settings
     Idiot check for wrong syringe settings
 Triggering
     Send input to pump, receive output, activating next step in procedure
