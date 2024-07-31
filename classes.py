@@ -33,7 +33,7 @@ class SyringePump:
 
     def input(self, input_message: str) -> str:
         output = ''
-        print('IN:', input_message)
+        # print('IN:', input_message)
         formatted_input = input_message + '\r\n'
         self.ser.write(formatted_input.encode('ascii'))
 
@@ -43,7 +43,7 @@ class SyringePump:
             output += self.ser.read(1).decode("utf-8")
 
         if output != '':
-            print('OUT:', output)
+            # print('OUT:', output)
             self.state = output
         return output
 
@@ -125,7 +125,7 @@ class MultifrequencyBoard:
     def input(self, input_message: str) -> str:
         output = ''
         formatted_input = '<' + input_message + '\n'
-        print('IN:', formatted_input)
+        # print('IN:', formatted_input)
         self.ser.write(formatted_input.encode('ascii'))
 
         # Wait 1 sec before reading output
@@ -134,7 +134,8 @@ class MultifrequencyBoard:
             output += self.ser.read(1).decode("utf-8")
 
         if output != '':
-            print('OUT:', output)
+            # print('OUT:', output)
+            pass
         return output
 
     def enable(self):

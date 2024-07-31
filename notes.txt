@@ -1,5 +1,7 @@
 Pump Control
 
+pip install --no-index --find-links=package_folder -r requirements.txt
+
 Multiple syringe pumps can automate device operation.
 
 Procedure:
