@@ -1,6 +1,7 @@
 import time
 
 import serial
+from serial.serialutil import SerialException
 
 
 class SyringePump:
@@ -12,30 +13,40 @@ class SyringePump:
     com needs to be str in format 'COM#'
     """
 
-    def __init__(self, address, com):
+    def __init__(self, address, com, name):
+        self.name = name
         self.address = address
         self.com = com
-        self.ser = serial.Serial(
-            port=self.com,
-            baudrate=9600,
-            parity=serial.PARITY_ODD,
-            stopbits=serial.STOPBITS_TWO,
-            bytesize=serial.SEVENBITS
-            )
-        self.state = ''
-        self.connection()
+        self.info = f"ADDR:{self.address} COM:{self.com}"
+        self.ser = self.connect()
 
-    def connection(self):
-        if self.ser.isOpen():
-            print('Connected')
-        else:
-            print('Failed to connect')
+        self.state = ''
+
+    def connect(self):
+        try:
+            ser = serial.Serial(
+                port=self.com,
+                baudrate=9600,
+                parity=serial.PARITY_ODD,
+                stopbits=serial.STOPBITS_TWO,
+                bytesize=serial.SEVENBITS
+            )
+            print(f'{self.name} connected with {self.info}')
+            return ser
+        except SerialException as e:
+            print(f'{self.name} failed to connect... Could not open port {self.com}!\n')
+            return None
 
     def input(self, input_message: str) -> str:
         output = ''
         # print('IN:', input_message)
         formatted_input = input_message + '\r\n'
-        self.ser.write(formatted_input.encode('ascii'))
+        try:
+            self.ser.write(formatted_input.encode('ascii'))
+        except AttributeError:
+            print("Device not connected!!\nQuitting...")
+            quit(3)
+
 
         # Wait 1 sec before reading output
         time.sleep(1)
@@ -110,17 +121,20 @@ class MultifrequencyBoard:
 
     def __init__(self, com):
         self.com = com
-        self.ser = serial.Serial(
-            baudrate=115200,
-            port=self.com)
-        self.channel = 1
-        self.connection()
+        self.ser = self.connect()
 
-    def connection(self):
-        if self.ser.isOpen():
-            print('Connected')
-        else:
-            print('Failed to connect')
+        self.channel = 1
+
+    def connect(self):
+        try:
+            ser = serial.Serial(
+                baudrate=115200,
+                port=self.com)
+            print(f'MF board connected on {self.com}')
+            return ser
+        except SerialException as e:
+            print(f'MF board failed to connect... Could not open port {self.com}!\n')
+            return None
 
     def input(self, input_message: str) -> str:
         output = ''
@@ -167,6 +181,7 @@ class MultifrequencyBoard:
 
 class Microscope:
     """class representing the SMZ18"""
+
     def __init__(self):
         self.path = ''
         self.current_trial = 1
