@@ -1,5 +1,8 @@
 import tkinter as tk
+import threading
+import queue
 
+import routine
 from classes import SyringePump, MultifrequencyBoard
 
 
@@ -7,15 +10,15 @@ class InitializationInterface:
     def __init__(self, master):
         self.master = master
         # Default COM values
-        self.outlet_COM = tk.StringVar(value='COM1')
-        self.cell_COM = tk.StringVar(value='COM1')
-        self.buffer_COM = tk.StringVar(value='COM1')
-        self.waste_COM = tk.StringVar(value='COM1')
-        self.mf_COM = tk.StringVar(value='COM1')
+        self.outlet_COM = tk.StringVar(value='COM11')
+        self.cell_COM = tk.StringVar(value='COM12')
+        self.buffer_COM = tk.StringVar(value='COM9')
+        self.waste_COM = tk.StringVar(value='COM10')
+        self.mf_COM = tk.StringVar(value='COM8')
         # Default address values
         self.outlet_ADDR = tk.StringVar(value='0')
-        self.cell_ADDR = tk.StringVar(value='1')
-        self.buffer_ADDR = tk.StringVar(value='2')
+        self.cell_ADDR = tk.StringVar(value='2')
+        self.buffer_ADDR = tk.StringVar(value='1')
         self.waste_ADDR = tk.StringVar(value='3')
 
         self.create_toolbar()
@@ -108,9 +111,6 @@ class InitializationInterface:
     def press_ok(self):
         self.press_connect()
         self.master.destroy()
-        new_window = tk.Tk()
-        new_window.title("Get Pumped!")
-        PumpControlUserInterface(new_window, self)
 
     def press_connect(self):
         # Create Pump instances
@@ -129,9 +129,14 @@ class PumpControlUserInterface:
         self.master = master
 
         self.set_ui_default_values()
-        self.set_initial_hardware_values()
         self.create_toolbar()
         self.create_pump_controls()
+
+        self.routine_running = False
+        self.thread = None
+        # self.queue = queue.Queue()
+        #
+        # self.master.after(100, self.process_queue)
 
     def set_ui_default_values(self):
         # Pump default flow rates
@@ -141,27 +146,29 @@ class PumpControlUserInterface:
         self.cell_rate = self.inlet_flow_rate
         self.waste_rate = self.inlet_flow_rate
 
-        self.outlet_capture = tk.StringVar(value="100 nm")
-        self.outlet_ff = tk.StringVar(value="1200 um")
+        self.outlet_capture_rate = tk.StringVar(value="100 nm")
+        self.outlet_ff_rate = tk.StringVar(value="1200 um")
 
         # Pump default target volumes
         self.inlet_target_volume = tk.StringVar(value="20 u")
-        self.buffer_volume = self.inlet_target_volume
-        self.cell_volume = self.inlet_target_volume
-        self.waste_volume = self.inlet_target_volume
+        self.buffer_volume = tk.StringVar(value=self.inlet_target_volume.get())
+        self.cell_volume = tk.StringVar(value=self.inlet_target_volume.get())
+        self.waste_volume = tk.StringVar(value=self.inlet_target_volume.get())
+        self.outlet_ff_volume = tk.StringVar(value=self.inlet_target_volume.get())
 
         # MF Board Parameters
         self.mf_amp = tk.StringVar(value='28')
         self.mf_frequency = tk.StringVar(value='90')
 
-    def set_initial_hardware_values(self):
+    def set_hardware_values(self):
+        print("Setting values...")
         # Inlet Pump flow rates
         self.device.buffer_pump.input('irate ' + self.buffer_rate.get())
         self.device.cell_pump.input('irate ' + self.cell_rate.get())
         self.device.waste_pump.input('wrate ' + self.waste_rate.get())
 
         # Outlet pump flow rates
-        self.device.outlet_pump.input('wrate ' + self.outlet_capture.get())
+        self.device.outlet_pump.input('wrate ' + self.outlet_capture_rate.get())
 
         # Pump default target volumes
         # Clear volumes
@@ -170,13 +177,14 @@ class PumpControlUserInterface:
         self.device.waste_pump.input('cvolume')
 
         # Set target values
-        self.device.buffer_pump.input('tvolume ' + self.buffer_volume())
+        self.device.buffer_pump.input('tvolume ' + self.buffer_volume.get())
         self.device.cell_pump.input('tvolume ' + self.cell_volume.get())
         self.device.waste_pump.input('tvolume ' + self.waste_volume.get())
 
         # Set MF Board Parameters
-        self.device.mf_board.amplitude = self.mf_amp
-        self.device.mf_board.frequency = self.mf_frequency
+        self.device.mf_board.amplitude = self.mf_amp.get()
+        self.device.mf_board.frequency = self.mf_frequency.get()
+        print("Values set!")
 
     def create_toolbar(self):
         menu = tk.Menu(self.master)
@@ -211,7 +219,7 @@ class PumpControlUserInterface:
         row += row
         col = 0
         tk.Label(self.master, text="Outlet Pump Capture", anchor=anchor, width=20).grid(row=row, column=col, padx=pad_x, pady=5)
-        self.entry_value = tk.Entry(self.master, textvariable=self.outlet_capture, width=COM_width, justify='right')
+        self.entry_value = tk.Entry(self.master, textvariable=self.outlet_capture_rate, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 1, padx=pad_x, pady=5)
 
 
@@ -219,9 +227,9 @@ class PumpControlUserInterface:
         row += row
         col = 0
         tk.Label(self.master, text="Outlet Pump FF", anchor=anchor, width=width).grid(row=row, column=col, padx=pad_x, pady=5)
-        self.entry_value = tk.Entry(self.master, textvariable=self.outlet_ff, width=COM_width, justify='right')
+        self.entry_value = tk.Entry(self.master, textvariable=self.outlet_ff_rate, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 1, padx=pad_x, pady=5)
-        self.entry_value = tk.Entry(self.master, textvariable=self.outlet_ff, width=COM_width, justify='right')
+        self.entry_value = tk.Entry(self.master, textvariable=self.outlet_ff_volume, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 2, padx=pad_x, pady=5)
 
         # Label and Entry 2: Cell Pump
@@ -261,12 +269,8 @@ class PumpControlUserInterface:
         self.entry_value = tk.Entry(self.master, textvariable=self.mf_frequency, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 2, padx=pad_x, pady=5)
 
-        # Update button
-        self.update_button = tk.Button(self.master, text="Update Settings", command=self.press_ok, width=14)
-        self.update_button.grid(row=row + 1, column=1, padx=pad_x, pady=10)
-
         # Run/Restart button
-        self.run_button = tk.Button(self.master, text="Run/Restart", command=self.press_ok, width=14)
+        self.run_button = tk.Button(self.master, text="Run/Restart", command=self.press_run, width=14)
         self.run_button.grid(row=row + 1, column=2, padx=pad_x, pady=10)
 
         # Quit button
@@ -274,13 +278,31 @@ class PumpControlUserInterface:
         self.quit_button.grid(row=row + 1, column=3, padx=pad_x, pady=10)
 
     def quit_ui(self):
+        self.routine_running = False
+        if self.thread:
+            self.thread.join()
         self.master.destroy()
-        quit(2)
 
-    def press_ok(self):
-        self.master.destroy()
-        # new_window = tk.Tk()
-        # new_window.title("New Window")
+    def press_run(self):
+        if not self.routine_running:
+            self.routine_running = True
+            self.thread = threading.Thread(target=self.worker_loop)
+            # self.set_hardware_values()
+            self.thread.start()
+
+    # def process_queue(self):
+    #     try:
+    #         while True:
+    #             msg = self.queue.get_nowait()
+    #             print(msg)
+    #     except queue.Empty:
+    #         pass
+    #     self.master.after(100, self.process_queue)
+
+    def worker_loop(self):
+        while self.routine_running:
+            routine.ui_routine(self)
+        print("Worker_loop ended")
 
 
 def create_ui():
@@ -288,7 +310,11 @@ def create_ui():
     root.title("Initialization")
     app = InitializationInterface(root)
     root.mainloop()
-    return app
+
+    new_window = tk.Tk()
+    new_window.title("Get Pumped!")
+    PumpControlUserInterface(new_window, app)
+    new_window.mainloop()
 
     # window.iconbitmap(r'count.ico')
 
@@ -298,5 +324,6 @@ if __name__ == '__main__':
 
 # TODO: Add icon
 # TODO: Print progress / progress bar?
-# TODO: Access classes from ui
-# TODO: update classes from ui during routine while loop
+
+# TODO: How to quit without crashing
+# TODO: Quit safely ^ turn off voltage and all pumps

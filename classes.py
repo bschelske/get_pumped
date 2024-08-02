@@ -17,8 +17,11 @@ class SyringePump:
         self.name = name
         self.address = address
         self.com = com
-        self.info = f"ADDR:{self.address} COM:{self.com}"
         self.ser = self.connect()
+        self.syringe = self.get_syringe()
+        if self.ser:
+            self.info = f"ADDR: {self.address} COM: {self.com}, syringe: {self.get_syringe()}"
+            print(self.info)
 
         self.state = ''
 
@@ -31,9 +34,10 @@ class SyringePump:
                 stopbits=serial.STOPBITS_TWO,
                 bytesize=serial.SEVENBITS
             )
-            print(f'{self.name} connected with {self.info}')
+            print(f'{self.name} connected.')
             return ser
         except SerialException as e:
+            print(e)
             print(f'{self.name} failed to connect... Could not open port {self.com}!\n')
             return None
 
@@ -82,6 +86,10 @@ class SyringePump:
 
     def clear_target_volume(self):
         response = self.input('ctvolume')
+        return response
+
+    def clear_volume(self):
+        response = self.input('cvolume')
         return response
 
     def set_target_volume(self, volume=''):
