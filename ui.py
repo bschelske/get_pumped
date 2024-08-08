@@ -92,9 +92,9 @@ class InitializationInterface:
         self.entry_value = tk.Entry(self.master, textvariable=self.mf_COM, width=COM_width, justify='center')
         self.entry_value.grid(row=row, column=col + 1, padx=5, pady=5)
 
-        # Connect button
-        self.connect_button = tk.Button(self.master, text="Test", command=self.press_connect, width=7)
-        self.connect_button.grid(row=row+1, column=1, padx=1, pady=10)
+        # Test button
+        self.test_button = tk.Button(self.master, text="Test", command=self.press_test, width=7)
+        self.test_button.grid(row=row + 1, column=1, padx=1, pady=10)
 
         # OK button
         self.OK_button = tk.Button(self.master, text="OK", command=self.press_ok, width=7)
@@ -107,6 +107,9 @@ class InitializationInterface:
     def quit_ui(self):
         self.master.destroy()
         quit(2)
+
+    def press_test(self):
+        self.master.destroy()
 
     def press_ok(self):
         self.press_connect()

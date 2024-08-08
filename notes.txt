@@ -49,6 +49,7 @@ could press the hotkeys?
 
 The hotkeys + inputs could be used to drive MFG as well. XML files is also an option for the MFG. I don't like the
 python input approach.
+        20240806: MFG can be controlled by serial inputs
 
 TODO:
 Nikon software control via python
@@ -64,6 +65,7 @@ Pump Control
     Idiot check for wrong syringe settings
 Triggering
     Send input to pump, receive output, activating next step in procedure
+        20240806: Probably not necessary because in reality, steps of the routine continue for set amounts of time
 MFG
     ✅ Connect to board
 IRL
