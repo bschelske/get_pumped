@@ -185,20 +185,3 @@ class MultifrequencyBoard:
             # Get current amplitude
             s = 'freq ' + str(self.channel)
         self.input(s)
-
-
-class Microscope:
-    """class representing the SMZ18"""
-
-    def __init__(self):
-        self.path = ''
-        self.current_trial = 1
-
-    def image(self, filename):
-        # Take an image with the microscope
-        image_path = self.path + filename + '.tif'
-        pass
-
-    def connect(self):
-        # Connect to microscope
-        pass
