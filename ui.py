@@ -10,10 +10,10 @@ class InitializationInterface:
     def __init__(self, master):
         self.master = master
         # Default COM values
-        self.outlet_COM = tk.StringVar(value='COM11')
+        self.outlet_COM = tk.StringVar(value='COM15')
         self.cell_COM = tk.StringVar(value='COM12')
         self.buffer_COM = tk.StringVar(value='COM9')
-        self.waste_COM = tk.StringVar(value='COM10')
+        self.waste_COM = tk.StringVar(value='COM16')
         self.mf_COM = tk.StringVar(value='COM8')
         # Default address values
         self.outlet_ADDR = tk.StringVar(value='0')
@@ -145,19 +145,19 @@ class PumpControlUserInterface:
         # Pump default flow rates
         #   Add default values to UI
         self.inlet_flow_rate = tk.StringVar(value="1200 um")
-        self.buffer_rate = self.inlet_flow_rate
-        self.cell_rate = self.inlet_flow_rate
-        self.waste_rate = self.inlet_flow_rate
+        self.buffer_rate = tk.StringVar(value="1200 um")
+        self.cell_rate = tk.StringVar(value="1200 um")
+        self.waste_rate = tk.StringVar(value="1200 um")
 
         self.outlet_capture_rate = tk.StringVar(value="100 nm")
         self.outlet_ff_rate = tk.StringVar(value="1200 um")
 
         # Pump default target volumes
-        self.inlet_target_volume = tk.StringVar(value="20 u")
+        self.inlet_target_volume = tk.StringVar(value="15 u")
         self.buffer_volume = tk.StringVar(value=self.inlet_target_volume.get())
         self.cell_volume = tk.StringVar(value=self.inlet_target_volume.get())
-        self.waste_volume = tk.StringVar(value=self.inlet_target_volume.get())
-        self.outlet_ff_volume = tk.StringVar(value=self.inlet_target_volume.get())
+        self.waste_volume = tk.StringVar(value="30 u")
+        self.outlet_ff_volume = tk.StringVar(value="100 u")
 
         # MF Board Parameters
         self.mf_amp = tk.StringVar(value='28')
@@ -290,7 +290,7 @@ class PumpControlUserInterface:
         if not self.routine_running:
             self.routine_running = True
             self.thread = threading.Thread(target=self.worker_loop)
-            # self.set_hardware_values()
+            self.set_hardware_values()
             self.thread.start()
 
     # def process_queue(self):
