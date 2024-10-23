@@ -10,16 +10,16 @@ class InitializationInterface:
     def __init__(self, master):
         self.master = master
         # Default COM values
-        self.outlet_COM = tk.StringVar(value='COM15')
-        self.cell_COM = tk.StringVar(value='COM12')
-        self.buffer_COM = tk.StringVar(value='COM9')
-        self.waste_COM = tk.StringVar(value='COM16')
+        self.outlet_COM = tk.StringVar(value='COM9')
+        self.cell_COM = tk.StringVar(value='COM17')
+        self.buffer_COM = tk.StringVar(value='COM11')
+        self.waste_COM = tk.StringVar(value='COM10')
         self.mf_COM = tk.StringVar(value='COM8')
         # Default address values
-        self.outlet_ADDR = tk.StringVar(value='0')
-        self.cell_ADDR = tk.StringVar(value='2')
+        self.outlet_ADDR = tk.StringVar(value='1')
+        self.cell_ADDR = tk.StringVar(value='0')
         self.buffer_ADDR = tk.StringVar(value='1')
-        self.waste_ADDR = tk.StringVar(value='3')
+        self.waste_ADDR = tk.StringVar(value='2')
 
         self.create_toolbar()
         self.create_initialization_window()

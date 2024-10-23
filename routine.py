@@ -6,6 +6,14 @@ import time
 from ui import PumpControlUserInterface
 
 
+def left_click():
+    # Oh brother
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
+    time.sleep(.1)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
+    print('click')
+
+
 def autocapture_image():
     # Press down the Ctrl key
     win32api.keybd_event(win32con.VK_CONTROL, 0, 0, 0)
@@ -35,7 +43,8 @@ def ui_routine(ui_control: PumpControlUserInterface):
 
     # 1. Image blank
     print('1. Image blank')
-    autocapture_image()
+    # autocapture_image()
+    left_click()
     time.sleep(1.5)
 
     # 2. Remove waste from inlet
@@ -81,7 +90,8 @@ def ui_routine(ui_control: PumpControlUserInterface):
 
     # 10. Image tips
     print('10. Image tips')
-    autocapture_image()
+    # autocapture_image()
+    left_click()
     time.sleep(1.5)
 
     # 11. Turn off voltage
@@ -91,7 +101,8 @@ def ui_routine(ui_control: PumpControlUserInterface):
 
     # 12. Image transfer
     print('12. Image transfer')
-    autocapture_image()
+    # autocapture_image()
+    left_click()
     time.sleep(1.5)
 
     # 12. FF withdraw flow pump
