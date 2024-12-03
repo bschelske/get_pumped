@@ -1,4 +1,5 @@
 import time
+import datetime
 
 import serial
 from serial.serialutil import SerialException
@@ -20,7 +21,7 @@ class SyringePump:
         self.ser = self.connect()
         self.syringe = self.get_syringe()
         if self.ser:
-            self.info = f"ADDR: {self.address} COM: {self.com}, syringe: {self.get_syringe()}"
+            self.info = f"{datetime.datetime.now().strftime('%H:%M:%S')} ADDR: {self.address} COM: {self.com}, syringe: {self.get_syringe()}"
             print(self.info)
 
         self.state = ''
@@ -34,11 +35,11 @@ class SyringePump:
                 stopbits=serial.STOPBITS_TWO,
                 bytesize=serial.SEVENBITS
             )
-            print(f'{self.name} connected.')
+            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} connected.')
             return ser
         except SerialException as e:
             print(e)
-            print(f'{self.name} failed to connect... Could not open port {self.com}!\n')
+            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} failed to connect... Could not open port {self.com}!\n')
             return None
 
     def input(self, input_message: str) -> str:
@@ -48,7 +49,7 @@ class SyringePump:
         try:
             self.ser.write(formatted_input.encode('ascii'))
         except AttributeError:
-            print("Device not connected!!\nQuitting...")
+            print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Device not connected!!\nQuitting...")
             quit(3)
 
 
@@ -138,10 +139,10 @@ class MultifrequencyBoard:
             ser = serial.Serial(
                 baudrate=115200,
                 port=self.com)
-            print(f'MF board connected on {self.com}')
+            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} MF board connected on {self.com}')
             return ser
         except SerialException as e:
-            print(f'MF board failed to connect... Could not open port {self.com}!\n')
+            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} MF board failed to connect... Could not open port {self.com}!\n')
             return None
 
     def input(self, input_message: str) -> str:

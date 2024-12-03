@@ -1,5 +1,6 @@
 import tkinter as tk
 import threading
+import datetime
 import queue
 
 import routine
@@ -109,6 +110,7 @@ class InitializationInterface:
         quit(2)
 
     def press_test(self):
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Testing Mode (Skipped serialization)")
         self.master.destroy()
 
     def press_ok(self):
@@ -164,7 +166,7 @@ class PumpControlUserInterface:
         self.mf_frequency = tk.StringVar(value='90')
 
     def set_hardware_values(self):
-        print("Setting values...")
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Setting values...")
         # Inlet Pump flow rates
         self.device.buffer_pump.input('irate ' + self.buffer_rate.get())
         self.device.cell_pump.input('irate ' + self.cell_rate.get())
@@ -187,7 +189,7 @@ class PumpControlUserInterface:
         # Set MF Board Parameters
         self.device.mf_board.amplitude = self.mf_amp.get()
         self.device.mf_board.frequency = self.mf_frequency.get()
-        print("Values set!")
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Values set!")
 
     def create_toolbar(self):
         menu = tk.Menu(self.master)
@@ -305,7 +307,7 @@ class PumpControlUserInterface:
     def worker_loop(self):
         while self.routine_running:
             routine.ui_routine(self)
-        print("Worker_loop ended")
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Worker_loop ended")
 
 
 def create_ui():
@@ -323,6 +325,7 @@ def create_ui():
 
 
 if __name__ == '__main__':
+    print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Begin Initialization")
     create_ui()
 
 # TODO: Add icon

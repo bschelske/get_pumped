@@ -2,6 +2,7 @@ from classes import MultifrequencyBoard, SyringePump
 import win32api
 import win32con
 import time
+import datetime
 
 from ui import PumpControlUserInterface
 
@@ -11,7 +12,7 @@ def left_click():
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
     time.sleep(.1)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
-    print('click')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} click')
 
 
 def autocapture_image():
@@ -30,7 +31,7 @@ def autocapture_image():
 def ui_routine(ui_control: PumpControlUserInterface):
     # 0. Ensure regular conditions
     # Replace inlet solution with buffer
-    print('0. Ensure regular conditions')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 0. Ensure regular conditions')
     ui_control.device.mf_board.disable()
     remove_waste(ui_control)
     infuse_buffer(ui_control)
@@ -42,71 +43,71 @@ def ui_routine(ui_control: PumpControlUserInterface):
     time.sleep(10)
 
     # 1. Image blank
-    print('1. Image blank')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 1. Image blank')
     # autocapture_image()
     left_click()
     time.sleep(1.5)
 
     # 2. Remove waste from inlet
-    print('2. Remove waste from inlet')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 2. Remove waste from inlet')
     remove_waste(ui_control)
     time.sleep(1.5)
 
     # 3. Infuse cells
-    print('3. Infuse cells')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 3. Infuse cells')
     infuse_cells(ui_control)
     time.sleep(1.5)
 
     # 4. FF withdraw outlet pump
-    print('4. FF withdraw outlet pump')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 4. FF withdraw outlet pump')
     ff_outlet(ui_control)
     time.sleep(1.5)
     outlet_capture_withdraw(ui_control)
     time.sleep(1)
 
     # 5. Turn on voltage
-    print('5. Turn on voltage')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 5. Turn on voltage')
     ui_control.device.mf_board.enable()
 
     # 6. Wait 5 min withdraw outlet pump
-    print('6. Wait 5 min withdraw outlet pump')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 6. Wait 5 min withdraw outlet pump')
     outlet_capture_withdraw(ui_control)
     time.sleep(5 * 60)
 
     # 7. Withdraw cells from inlet
-    print('7. Withdraw cells from inlet')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 7. Withdraw cells from inlet')
     remove_waste(ui_control)
     time.sleep(1.5)
 
     # 8. Infuse buffer
-    print('8. Infuse buffer')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 8. Infuse buffer')
     infuse_buffer(ui_control)
     time.sleep(1.5)
 
     # 9. Wait ~2 min for channel to rinse
-    print('9. Wait ~2 min for channel to rinse')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 9. Wait ~2 min for channel to rinse')
     outlet_capture_withdraw(ui_control)
     time.sleep(2 * 60)
 
     # 10. Image tips
-    print('10. Image tips')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 10. Image tips')
     # autocapture_image()
     left_click()
     time.sleep(1.5)
 
     # 11. Turn off voltage
-    print('11. Turn off voltage')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 11. Turn off voltage')
     ui_control.device.mf_board.disable()
     time.sleep(10)  # Cells transfer in
 
     # 12. Image transfer
-    print('12. Image transfer')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 12. Image transfer')
     # autocapture_image()
     left_click()
     time.sleep(1.5)
 
     # 12. FF withdraw flow pump
-    print('13. FF withdraw flow pump')
+    print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 13. FF withdraw flow pump')
     ff_outlet(ui_control)
     time.sleep(1.5)
     outlet_capture_withdraw(ui_control)
@@ -166,7 +167,7 @@ def routine(voltage=25, frequency=90, outlet_withdraw_rate='50 n/m'):
     something = True
     while something:
         # 0. Ensure regular conditions
-        print('0. Ensure regular conditions')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 0. Ensure regular conditions')
         board.disable()
         waste_pump.clear_volume()
         waste_pump.input('tvolume 20 u')
@@ -187,26 +188,26 @@ def routine(voltage=25, frequency=90, outlet_withdraw_rate='50 n/m'):
         time.sleep(10)
 
         # 1. Image blank
-        print('1. Image blank')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 1. Image blank')
         autocapture_image()
         time.sleep(1.5)
 
         # 2. Remove waste from inlet
-        print('2. Remove waste from inlet')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 2. Remove waste from inlet')
         waste_pump.clear_volume()
         waste_pump.input('tvolume 30 u')
         waste_pump.input('wrun')
         time.sleep(1.5)
 
         # 3. Infuse cells
-        print('3. Infuse cells')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 3. Infuse cells')
         cell_pump.clear_volume()
         cell_pump.input('tvolume 30 u')
         cell_pump.input('irun')
         time.sleep(1.5)
 
         # 4. FF withdraw outlet pump
-        print('4. FF withdraw outlet pump')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 4. FF withdraw outlet pump')
         outlet_pump.clear_volume()
         outlet_pump.input(outlet_fast_rate)
         outlet_pump.input('tvolume 15 u')
@@ -218,18 +219,18 @@ def routine(voltage=25, frequency=90, outlet_withdraw_rate='50 n/m'):
         time.sleep(1)
 
         # 5. Turn on voltage
-        print('5. Turn on voltage')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 5. Turn on voltage')
         board.enable()
 
         # 6. Wait 5 min withdraw outlet pump
-        print('6. Wait 5 min withdraw outlet pump')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 6. Wait 5 min withdraw outlet pump')
         outlet_pump.withdraw_rate(outlet_withdraw_rate)
         outlet_pump.run()
         # time.sleep(5 * 60)
         time.sleep(1)
 
         # 7. Withdraw cells from inlet
-        print('7. Withdraw cells from inlet')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 7. Withdraw cells from inlet')
         waste_pump.clear_volume()
         waste_pump.input('wrate 1200 um')
         waste_pump.input('tvolume 30 u')
@@ -237,35 +238,35 @@ def routine(voltage=25, frequency=90, outlet_withdraw_rate='50 n/m'):
         time.sleep(1.5)
 
         # 8. Infuse buffer
-        print('8. Infuse buffer')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 8. Infuse buffer')
         buffer_pump.clear_volume()
         buffer_pump.input('tvolume 15 u')
         buffer_pump.input('irun')
         time.sleep(1.5)
 
         # 9. Wait ~2 min for channel to rinse
-        print('9. Wait ~2 min for channel to rinse')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 9. Wait ~2 min for channel to rinse')
         outlet_pump.withdraw_rate(outlet_withdraw_rate)
         outlet_pump.run()
         time.sleep(2 * 60)
 
         # 10. Image tips
-        print('10. Image tips')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 10. Image tips')
         autocapture_image()
         time.sleep(1.5)
 
         # 11. Turn off voltage
-        print('11. Turn off voltage')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 11. Turn off voltage')
         board.disable()
         time.sleep(10)  # Cells transfer in
 
         # 12. Image transfer
-        print('12. Image transfer')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 12. Image transfer')
         autocapture_image()
         time.sleep(1.5)
 
         # 12. FF withdraw flow pump
-        print('13. FF withdraw flow pump')
+        print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 13. FF withdraw flow pump')
         outlet_pump.clear_volume()
         outlet_pump.input(outlet_fast_rate)
         outlet_pump.input('tvolume 15 u')
