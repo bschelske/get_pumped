@@ -1,6 +1,9 @@
 import tkinter as tk
 import threading
 import datetime
+import serial
+import serial.tools.list_ports
+import time
 import queue
 
 import routine
@@ -97,6 +100,10 @@ class InitializationInterface:
         self.test_button = tk.Button(self.master, text="Test", command=self.press_test, width=7)
         self.test_button.grid(row=row + 1, column=1, padx=1, pady=10)
 
+        # Scan button
+        self.Scan = tk.Button(self.master, text="Scan", command=self.press_scan, width=7)
+        self.Scan.grid(row=row + 1, column=0, padx=1, pady=10)
+
         # OK button
         self.OK_button = tk.Button(self.master, text="OK", command=self.press_ok, width=7)
         self.OK_button.grid(row=row+1, column=2, padx=1, pady=10)
@@ -112,6 +119,32 @@ class InitializationInterface:
     def press_test(self):
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Testing Mode (Skipped serialization)")
         self.master.destroy()
+
+    def press_scan(self):
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Scanning Ports...")
+        """Print info about each COM port, then make a list and attempt connection to Harvard Pumps"""
+
+        ports = serial.tools.list_ports.comports()
+        pumps = []
+        for port in sorted(ports):
+            print(f"\t{port.name}: {port.description} [{port.hwid}]")
+            if port.vid == 8169:  # Harvard Apparatus Vendor ID (vid) should be the same for all pumps
+                pumps.append(port)
+
+        for pump in pumps:
+            print(f"\n{datetime.datetime.now().strftime('%H:%M:%S')} Accessing pump on {pump.name}")
+
+            ser = serial.Serial(
+                port=pump.name,
+                baudrate=9600,
+                parity=serial.PARITY_ODD,
+                stopbits=serial.STOPBITS_TWO,
+                bytesize=serial.SEVENBITS
+            )
+
+            output = check_address(ser, 'address')
+            address = output.casefold().strip().split('\r\n')
+            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {pump.name} {address[0]} with status "{address[1]}"')
 
     def press_ok(self):
         self.press_connect()
@@ -309,6 +342,25 @@ class PumpControlUserInterface:
             routine.ui_routine(self)
         print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Worker_loop ended")
 
+def check_address(ser, input_message: str) -> str:
+    output = ''
+    # print('IN:', input_message)
+    formatted_input = input_message + '\r\n'
+    try:
+        ser.write(formatted_input.encode('ascii'))
+    except AttributeError:
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Device not connected!!\nQuitting...")
+        quit(3)
+
+    # Wait 1 sec before reading output
+    time.sleep(1)
+    while ser.inWaiting() > 0:
+        output += ser.read(1).decode("utf-8")
+
+    if output != '':
+        # print('OUT:', output)
+        pass
+    return output
 
 def create_ui():
     root = tk.Tk()

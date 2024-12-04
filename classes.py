@@ -38,8 +38,8 @@ class SyringePump:
             print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} connected.')
             return ser
         except SerialException as e:
-            print(e)
-            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} failed to connect... Could not open port {self.com}!\n')
+            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} failed to connect... Could not open port {self.com}!')
+            print(f'\t{e}')
             return None
 
     def input(self, input_message: str) -> str:
