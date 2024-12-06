@@ -29,6 +29,7 @@ def autocapture_image():
 
 
 def ui_routine(ui_control: PumpControlUserInterface):
+    delay = 1.5
     # 0. Ensure regular conditions
     # Replace inlet solution with buffer
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 0. Ensure regular conditions')
@@ -46,12 +47,12 @@ def ui_routine(ui_control: PumpControlUserInterface):
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 1. Image blank')
     # autocapture_image()
     left_click()
-    time.sleep(1.5)
+    time.sleep(delay)
 
     # 2. Remove waste from inlet
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 2. Remove waste from inlet')
     remove_waste(ui_control)
-    time.sleep(1.5)
+    time.sleep(2)
 
     # 3. Infuse cells
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 3. Infuse cells')
@@ -93,7 +94,7 @@ def ui_routine(ui_control: PumpControlUserInterface):
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 10. Image tips')
     # autocapture_image()
     left_click()
-    time.sleep(1.5)
+    time.sleep(delay)
 
     # 11. Turn off voltage
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 11. Turn off voltage')
@@ -104,7 +105,7 @@ def ui_routine(ui_control: PumpControlUserInterface):
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 12. Image transfer')
     # autocapture_image()
     left_click()
-    time.sleep(1.5)
+    time.sleep(delay)
 
     # 12. FF withdraw flow pump
     print(f'{datetime.datetime.now().strftime('%H:%M:%S')} 13. FF withdraw flow pump')
