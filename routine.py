@@ -62,8 +62,7 @@ def ui_routine(ui_control: PumpControlUserInterface):
     # 6. Wait 5 min withdraw outlet pump
     print('6. Wait 5 min withdraw outlet pump')
     outlet_capture_withdraw(ui_control)
-    # time.sleep(5 * 60)
-    time.sleep(1)
+    time.sleep(5 * 60)
 
     # 7. Withdraw cells from inlet
     print('7. Withdraw cells from inlet')
@@ -78,8 +77,7 @@ def ui_routine(ui_control: PumpControlUserInterface):
     # 9. Wait ~2 min for channel to rinse
     print('9. Wait ~2 min for channel to rinse')
     outlet_capture_withdraw(ui_control)
-    # time.sleep(2 * 60)
-    time.sleep(1)
+    time.sleep(2 * 60)
 
     # 10. Image tips
     print('10. Image tips')
@@ -133,6 +131,7 @@ def outlet_capture_withdraw(control: PumpControlUserInterface):
     control.device.outlet_pump.clear_volume()
     control.device.outlet_pump.withdraw_rate(control.outlet_capture_rate.get())
     control.device.outlet_pump.run()
+
 
 def routine(voltage=25, frequency=90, outlet_withdraw_rate='50 n/m'):
     # Initialize Pumps, Board
