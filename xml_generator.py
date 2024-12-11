@@ -12,7 +12,7 @@ def create_script(output_filename):
     ET.SubElement(no_name, 'bPFSEnabled', {"runtype": "bool", "value": "false"})
 
     coordinates = coordinate_generator([106464.830134385425481, 25188.343777459111152, 57159.144000000000233],
-                                       [115271.169865614545415, 25203.656222540881572, 57159.144000000000233], 9)
+                                       [115271.169865614545415, 25203.656222540881572, 57159.144000000000233], 101)
     for index, coordinate in enumerate(coordinates):
         tag = f"Point{index:05d}"
         name = f"A{index + 1}"
@@ -74,7 +74,7 @@ def coordinate_generator(start, end, images):
 def main():
     # Example usage
     output_path = 'xml_files/'
-    output_script = output_path + '\\' + 'script.xml'
+    output_script = output_path + 'script.xml'
 
     create_script(output_script)  # This makes scripts
 

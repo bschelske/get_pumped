@@ -1,10 +1,9 @@
 import tkinter as tk
-import threading
+from threading import Thread, Lock
 import datetime
 import serial
 import serial.tools.list_ports
 import time
-import queue
 
 import routine
 from classes import SyringePump, MultifrequencyBoard
@@ -13,9 +12,10 @@ from classes import SyringePump, MultifrequencyBoard
 class InitializationInterface:
     def __init__(self, master):
         self.master = master
+
         # Default COM values
-        self.outlet_COM = tk.StringVar(value='COM18')
-        self.cell_COM = tk.StringVar(value='COM17')
+        self.outlet_COM = tk.StringVar(value='COM9')
+        self.cell_COM = tk.StringVar(value='COM18')
         self.buffer_COM = tk.StringVar(value='COM15')
         self.waste_COM = tk.StringVar(value='COM10')
         self.mf_COM = tk.StringVar(value='COM8')
@@ -166,19 +166,19 @@ class PumpControlUserInterface:
         self.device = InitializationInstance
         self.master = master
 
+        # Threading
+        self.running = False
+        self.current_action = "Waiting..."
+        self.lock = Lock()
+
+        # UI Appearance
         self.set_ui_default_values()
         self.create_toolbar()
         self.create_pump_controls()
 
-        self.routine_running = False
-        self.thread = None
-        # self.queue = queue.Queue()
-        #
-        # self.master.after(100, self.process_queue)
-
     def set_ui_default_values(self):
         # Pump default flow rates
-        #   Add default values to UI
+        # Add default values to UI
         self.inlet_flow_rate = tk.StringVar(value="1200 um")
         self.buffer_rate = tk.StringVar(value="1200 um")
         self.cell_rate = tk.StringVar(value="1200 um")
@@ -199,7 +199,8 @@ class PumpControlUserInterface:
         self.mf_frequency = tk.StringVar(value='90')
 
     def set_hardware_values(self):
-        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Setting values...")
+        self.status_label.config(text=f"Status: Busy")
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Setting values... (10 s)")
         # Inlet Pump flow rates
         self.device.buffer_pump.input('irate ' + self.buffer_rate.get())
         self.device.cell_pump.input('irate ' + self.cell_rate.get())
@@ -222,7 +223,8 @@ class PumpControlUserInterface:
         # Set MF Board Parameters
         self.device.mf_board.amplitude = self.mf_amp.get()
         self.device.mf_board.frequency = self.mf_frequency.get()
-        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Values set!")
+        self.status_label.config(text=f"Status: Responsive")
+        print(f"\t{datetime.datetime.now().strftime('%H:%M:%S')} Values set!")
 
     def create_toolbar(self):
         menu = tk.Menu(self.master)
@@ -258,7 +260,6 @@ class PumpControlUserInterface:
         self.entry_value = tk.Entry(self.master, textvariable=self.outlet_capture_rate, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 1, padx=pad_x, pady=5)
 
-
         # Label and Entry 1: Outlet Pump
         row += row
         col = 0
@@ -276,6 +277,7 @@ class PumpControlUserInterface:
         self.entry_value.grid(row=row, column=col + 1, padx=pad_x, pady=5)
         self.entry_value = tk.Entry(self.master, textvariable=self.cell_volume, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 2, padx=pad_x, pady=5)
+
         # Label and Entry 3: Buffer Pump
         row += row
         col = 0
@@ -284,6 +286,7 @@ class PumpControlUserInterface:
         self.entry_value.grid(row=row, column=col + 1, padx=pad_x, pady=5)
         self.entry_value = tk.Entry(self.master, textvariable=self.buffer_volume, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 2, padx=pad_x, pady=5)
+
         # Label and Entry 4: Waste Pump
         row += row
         col = 0
@@ -305,40 +308,61 @@ class PumpControlUserInterface:
         self.entry_value = tk.Entry(self.master, textvariable=self.mf_frequency, width=COM_width, justify='right')
         self.entry_value.grid(row=row, column=col + 2, padx=pad_x, pady=5)
 
-        # Run/Restart button
-        self.run_button = tk.Button(self.master, text="Run/Restart", command=self.press_run, width=14)
-        self.run_button.grid(row=row + 1, column=2, padx=pad_x, pady=10)
+        row += row
+        self.status_label = tk.Label(self.master, text="Status: Ready")
+        self.status_label.grid(row=row, column=0)
 
-        # Quit button
+        # Start Loop button
+        self.start_loop = tk.Button(self.master, text="Start Loop", command=self.start_loop, width=14)
+        self.start_loop.grid(row=row + 1, column=0, padx=pad_x, pady=10)
+
+        # Stop Loop button
+        self.stop_button = tk.Button(self.master, text="Stop Loop", command=self.stop_loop)
+        self.stop_button.grid(row=row + 1, column=1, padx=pad_x, pady=10)
+
+        # Update Parameters
+        self.update_parameters_button = tk.Button(self.master, text="Update Parameters", command=self.update_parameters)
+        self.update_parameters_button.grid(row=row + 1, column=2, padx=pad_x, pady=10)
+
+
+        # Quit Program button
         self.quit_button = tk.Button(self.master, text="Quit", command=self.quit_ui, width=7)
         self.quit_button.grid(row=row + 1, column=3, padx=pad_x, pady=10)
 
     def quit_ui(self):
-        self.routine_running = False
-        if self.thread:
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} quitting...")
+        self.running = False
+        if hasattr(self, "thread"):
             self.thread.join()
+        self.device.mf_board.disable()
+        print(f"\t{datetime.datetime.now().strftime('%H:%M:%S')} Voltage OFF")
         self.master.destroy()
 
-    def press_run(self):
-        if not self.routine_running:
-            self.routine_running = True
-            self.thread = threading.Thread(target=self.worker_loop)
+    def start_loop(self):
+        if not self.running:
+            self.running = True
+            self.status_label.config(text=f"Status: Running")
             self.set_hardware_values()
+            self.thread = Thread(target=self.loop)
             self.thread.start()
 
-    # def process_queue(self):
-    #     try:
-    #         while True:
-    #             msg = self.queue.get_nowait()
-    #             print(msg)
-    #     except queue.Empty:
-    #         pass
-    #     self.master.after(100, self.process_queue)
+    def stop_loop(self):
+        self.running = False
+        if hasattr(self, "thread"):
+            self.thread.join()
+        self.status_label.config(text=f"Status: Stopped")
 
-    def worker_loop(self):
-        while self.routine_running:
-            routine.ui_routine(self)
-        print(f"{datetime.datetime.now().strftime('%H:%M:%S')} Worker_loop ended")
+    def update_parameters(self):
+        self.status_label.config(text=f"Status: Busy")
+        self.set_hardware_values()
+        print(f"{datetime.datetime.now().strftime('%H:%M:%S')}: Parameters updated!")
+        self.status_label.config(text=f"Parameters updated!")
+
+    def loop(self):
+        routine.threaded_routine(self)
+            # with self.lock:
+            #     print(f"Performing step {i+1} with {self.current_action}")
+
 
 def check_address(ser, input_message: str) -> str:
     output = ''
@@ -359,6 +383,7 @@ def check_address(ser, input_message: str) -> str:
         # print('OUT:', output)
         pass
     return output
+
 
 def create_ui():
     root = tk.Tk()

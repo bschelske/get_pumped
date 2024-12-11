@@ -21,7 +21,7 @@ class SyringePump:
         self.ser = self.connect()
         self.syringe = self.get_syringe()
         if self.ser:
-            self.info = f"{datetime.datetime.now().strftime('%H:%M:%S')} ADDR: {self.address} COM: {self.com}, syringe: {self.get_syringe()}"
+            self.info = f"\t{datetime.datetime.now().strftime('%H:%M:%S')} ADDR: {self.address} COM: {self.com}, syringe: {self.get_syringe()}"
             print(self.info)
 
         self.state = ''
@@ -35,7 +35,7 @@ class SyringePump:
                 stopbits=serial.STOPBITS_TWO,
                 bytesize=serial.SEVENBITS
             )
-            print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} connected.')
+            print(f'\n{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} connected.')
             return ser
         except SerialException as e:
             print(f'{datetime.datetime.now().strftime('%H:%M:%S')} {self.name} failed to connect... Could not open port {self.com}!')
