@@ -406,5 +406,4 @@ if __name__ == '__main__':
 # TODO: Add icon
 # TODO: Print progress / progress bar?
 
-# TODO: How to quit without crashing
 # TODO: Quit safely ^ turn off voltage and all pumps
